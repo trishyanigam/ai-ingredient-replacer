@@ -149,3 +149,7 @@
   background-color: #ffc107;
   color: black;
 }
+
+.no-underline {
+  text-decoration: none;
+}

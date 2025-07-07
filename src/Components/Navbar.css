@@ -81,3 +81,7 @@
 .register:hover {
   background-color: #e2fdf8;
 }
+
+.no-underline {
+  text-decoration: none;
+}
