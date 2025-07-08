@@ -16,6 +16,7 @@ const Navbar = () => {
         <li><Link to="/chatbot">Chatbot</Link></li>
         <li><Link to="/recipes">Recipes</Link></li>
         <li><Link to="/community">Community</Link></li>
+        <li><Link to="/shopping">Shopping</Link></li>
       </ul>
 
       <div className="navbar-right">

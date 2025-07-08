@@ -9,6 +9,7 @@ import Community from './Components/Community';
 import Register from './Components/Register';
 import Login from './Components/Login';
 import SavedRecipes from './Components/SavedRecipes';
+import Shopping from './Components/Shopping';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/saved-recipes" element={<SavedRecipes />} />
+        <Route path="/shopping" element={<Shopping />} />
       </Routes>
     </Router>
   );
