@@ -55,6 +55,25 @@ const Replacer = () => {
     setExplanations(newExplanations);
   };
 
+  const saveRecipeToLocalStorage = () => {
+    if (!output) {
+      alert("Please generate a modified recipe first.");
+      return;
+    }
+
+    const saved = JSON.parse(localStorage.getItem('savedRecipes')) || [];
+    const newRecipe = {
+      id: Date.now(),
+      title: output.split('\n')[0] || 'Untitled Recipe',
+      description: explanations.join(', ') || 'No explanation provided.',
+      content: output,
+    };
+
+    saved.push(newRecipe);
+    localStorage.setItem('savedRecipes', JSON.stringify(saved));
+    alert('Recipe saved!');
+  };
+
   return (
     <div className="replacer-container">
       <h2>AI Ingredient Replacer</h2>
@@ -104,6 +123,7 @@ const Replacer = () => {
         <div className="output-box">
           <h3>Modified Recipe:</h3>
           <pre>{output}</pre>
+          <button onClick={saveRecipeToLocalStorage}>Save Recipe</button>
         </div>
       )}
 

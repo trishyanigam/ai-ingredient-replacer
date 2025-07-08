@@ -6,6 +6,12 @@
     opacity: 1;
   }
 }
+.btn.orange {
+  background-color: #f57c00;
+  color: white;
+  margin-left: 10px;
+}
+
 
 @keyframes slideUp {
   0% {

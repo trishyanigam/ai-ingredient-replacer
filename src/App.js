@@ -8,6 +8,7 @@ import Recipes from './Components/Recipes';
 import Community from './Components/Community';
 import Register from './Components/Register';
 import Login from './Components/Login';
+import SavedRecipes from './Components/SavedRecipes';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/community" element={<Community />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/saved-recipes" element={<SavedRecipes />} />
       </Routes>
     </Router>
   );

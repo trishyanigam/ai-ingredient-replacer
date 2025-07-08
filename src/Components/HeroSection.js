@@ -19,6 +19,9 @@ const HeroSection = () => {
             <Link to="/replacer" className="no-underline"><button  className="btn green">Try Replacer</button></Link>
             <Link to="/replacer" className="no-underline"><button className="btn blue">Ask RecipeBot</button></Link>
             <Link to="/replacer" className="no-underline"><button className="btn yellow">Join Now</button></Link>
+             <Link to="/saved-recipes" className="no-underline">
+              <button className="btn orange">Saved Recipes</button>
+            </Link>
           </div>
         </div>
       </div>
