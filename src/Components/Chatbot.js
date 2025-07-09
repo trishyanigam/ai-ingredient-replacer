@@ -25,7 +25,7 @@ const Chatbot = () => {
         body: JSON.stringify({
           model: "deepseek/deepseek-chat-v3-0324:free",
           stream: true,
-          messages: [
+          messages: [ 
             {
               role: "system",
               content: "You are an expert AI assistant for ingredient replacement and dietary advice. Only answer questions related to food, recipes, ingredient substitutions, allergies, and healthy cooking. If asked about anything else, politely redirect the user to food-related topics. Answer questions like human in simple words use emojis wherever posiible."

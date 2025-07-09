@@ -10,6 +10,7 @@ import Register from './Components/Register';
 import Login from './Components/Login';
 import SavedRecipes from './Components/SavedRecipes';
 import Shopping from './Components/Shopping';
+import MoodSelector from './Components/MoodSelector';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/saved-recipes" element={<SavedRecipes />} />
         <Route path="/shopping" element={<Shopping />} />
+        <Route path="/moodmeals" element={<MoodSelector />} />
       </Routes>
     </Router>
   );
