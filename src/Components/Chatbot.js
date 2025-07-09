@@ -20,7 +20,7 @@ const Chatbot = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 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'
+          'Authorization': 'Bearer YOUR_API_KEY'
         },
         body: JSON.stringify({
           model: "deepseek/deepseek-chat-v3-0324:free",
