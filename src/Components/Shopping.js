@@ -32,7 +32,7 @@ const products = [
 const Shopping = () => {
   return (
     <div className="shopping-container">
-      <h2>Shopping - Affiliated Products</h2>
+      <h2>Affiliated Products</h2>
       <div className="product-list">
         {products.map(product => (
           <div className="product-card" key={product.id}>
