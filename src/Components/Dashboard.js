@@ -27,7 +27,7 @@ const Dashboard = () => {
               <p>Here's what’s happening today:</p>
             </div>
           </div>
-          <div className="notification-bell">🔔</div>
+          <div className="Notification-bell">🔔</div>
         </div>
 
         {/* Summary Cards */}
