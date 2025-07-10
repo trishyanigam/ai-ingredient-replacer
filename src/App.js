@@ -11,6 +11,7 @@ import Login from './Components/Login';
 import SavedRecipes from './Components/SavedRecipes';
 import Shopping from './Components/Shopping';
 import MoodSelector from './Components/MoodSelector';
+import Dashboard from './Components/Dashboard';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/saved-recipes" element={<SavedRecipes />} />
         <Route path="/shopping" element={<Shopping />} />
         <Route path="/moodmeals" element={<MoodSelector />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );

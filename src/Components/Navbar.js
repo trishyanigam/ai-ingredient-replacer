@@ -19,6 +19,7 @@ const Navbar = () => {
         <li><Link to="/community">Community</Link></li>
         <li><Link to="/shopping">Shopping</Link></li>
         <li><Link to="/moodmeals">MoodMeals</Link></li>
+        <li><Link to="/dashboard">Dashboard</Link></li>
       </ul>
 
       <div className="navbar-right">
