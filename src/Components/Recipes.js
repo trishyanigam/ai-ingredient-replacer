@@ -34,14 +34,14 @@ const Recipes = () => {
     if (!dishName.trim()) return;
     setLoading(true);
     try {
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer YOUR_API_KEY`,
         },
         body: JSON.stringify({
-          model: 'deepseek-chat',
+          model: 'deepseek/deepseek-chat-v3-0324:free',
           messages: [
             {
               role: 'user',
@@ -71,14 +71,21 @@ const Recipes = () => {
     }
   };
 
-  const handleSearch = (e) => {
-    const dish = e.target.value;
-    setQuery(dish);
-    if (dish.trim()) {
-      fetchRecipes(dish);
-    } else {
-      setRecipes(defaultRecipes);
+  // Only update query on change
+  const handleInputChange = (e) => {
+    setQuery(e.target.value);
+  };
+
+  // Search on Enter key
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      fetchRecipes(query);
     }
+  };
+
+  // Search on button click
+  const handleSearchClick = () => {
+    fetchRecipes(query);
   };
 
   return (
@@ -86,13 +93,34 @@ const Recipes = () => {
       <h2>Featured Recipes</h2>
       <p className="subheading">Explore healthy, allergy-safe, and AI-optimized recipes</p>
 
-      <input
-        type="text"
-        placeholder="Search for any dish..."
-        value={query}
-        onChange={handleSearch}
-        className="recipe-search"
-      />
+      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '1rem' }}>
+        <input
+          type="text"
+          placeholder="Search for any dish..."
+          value={query}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          className="recipe-search"
+        />
+        <button 
+          onClick={handleSearchClick}
+          style={{ 
+            padding: '6px 14px', 
+            borderRadius: '6px', 
+            background: '#00c896', 
+            color: '#fff', 
+            border: 'none', 
+            fontWeight: 500, 
+            cursor: 'pointer', 
+            fontSize: '1em',
+            height: '36px',
+            alignSelf: 'center',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.07)'
+          }}
+        >
+          Search
+        </button>
+      </div>
 
       {loading ? (
         <p>Loading recipe from AI...</p>

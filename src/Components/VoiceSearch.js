@@ -34,9 +34,41 @@ const VoiceSearch = () => {
   };
 
   return (
-    <button onClick={handleVoiceSearch} style={styles.button}>
-       {listening ? 'Listening...' : 'Voice Search'}
-    </button>
+    <>
+      {listening && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,0,0,0.35)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000
+        }}>
+          <div style={{
+            background: '#fff',
+            padding: '2rem 2.5rem',
+            borderRadius: '18px',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+            textAlign: 'center',
+            minWidth: '220px',
+            fontSize: '1.2em',
+            color: '#00c896',
+            fontWeight: 600
+          }}>
+            <span role="img" aria-label="microphone" style={{fontSize: '2.2em', display: 'block', marginBottom: '0.5em'}}>🎤</span>
+            Listening...<br/>
+            <span style={{fontSize: '0.9em', color: '#555'}}>Please speak your recipe or dish name</span>
+          </div>
+        </div>
+      )}
+      <button onClick={handleVoiceSearch} style={styles.button}>
+         {listening ? 'Listening...' : 'Voice Search'}
+      </button>
+    </>
   );
 };
 
