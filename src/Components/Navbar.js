@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Navbar.css';
+import VoiceSearch from './VoiceSearch'; // ✅ Import the mic button
 
 const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-left">
-      <img src={`${process.env.PUBLIC_URL}/FoodFitAIlogo.png`} alt="Logo" className="logo" />
+        <img src={`${process.env.PUBLIC_URL}/FoodFitAIlogo.png`} alt="Logo" className="logo" />
         <span className="app-name">FoodFit AI</span>
       </div>
 
@@ -21,6 +22,7 @@ const Navbar = () => {
       </ul>
 
       <div className="navbar-right">
+        <VoiceSearch /> {/* ✅ Mic button added here */}
         <Link to="/login" className="no-underline"><button className="nav-btn login">Login</button></Link>
         <Link to="/register" className="no-underline"><button className="nav-btn register">Register</button></Link>
       </div>

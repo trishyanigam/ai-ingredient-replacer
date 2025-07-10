@@ -12,6 +12,18 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     text-align: center;
   }
+  .recipe-search {
+  width: 100%;
+  max-width: 500px;
+  padding: 10px 15px;
+  margin: 1rem auto;
+  display: block;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  outline: none;
+}
+
   
   .recipes-container h2 {
     font-size: 2rem;

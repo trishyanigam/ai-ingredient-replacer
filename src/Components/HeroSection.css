@@ -142,14 +142,17 @@
 }
 
 .btn {
-  padding: 14px 26px;
-  border: none;
-  border-radius: 50px;
+  padding: 12px 24px;
   font-size: 1rem;
-  font-weight: bold;
+  font-weight: 100;
+  border: none;
+  border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  outline: none;
 }
 
 .btn:hover {
@@ -173,10 +176,15 @@
   background: linear-gradient(to right, #ffc107, #ffdd57);
   color: black;
 }
+.red {
+  background: linear-gradient(to right, #ff416c, #ff4b2b);
+  color: white;
+}
 
 .no-underline {
   text-decoration: none;
 }
+ 
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -222,12 +230,13 @@
 .auto-scroll-text {
   width: 100%;
   max-width: 850px;
-  white-space: nowrap;
-  overflow: hidden;
+  white-space: normal;   /* allow wrapping */
+  overflow: visible;     /* show full text */
   position: relative;
-  height: 2rem; /* Adjust to your font size */
+  height: auto;
   margin: 2rem auto;
 }
+
 
 .auto-scroll-text::before {
   content: '';
@@ -251,8 +260,8 @@
 
 .auto-scroll-text span {
   display: inline-block;
-  padding-left: 100%;
-  animation: scroll-left 15s linear infinite;
+  padding-left: 0;
+  animation: none;
   font-size: 1.2rem;
   color: #ffffff;
 }

@@ -4,13 +4,11 @@ import './SavedRecipes.css';
 const SavedRecipes = () => {
   const [savedRecipes, setSavedRecipes] = useState([]);
 
-  // Load recipes from localStorage on mount
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('savedRecipes')) || [];
     setSavedRecipes(stored);
   }, []);
 
-  // Function to remove a recipe
   const handleRemove = (id) => {
     const updatedRecipes = savedRecipes.filter(recipe => recipe.id !== id);
     setSavedRecipes(updatedRecipes);
@@ -27,7 +25,8 @@ const SavedRecipes = () => {
           savedRecipes.map((recipe) => (
             <div key={recipe.id} className="recipe-card">
               <h3>{recipe.title}</h3>
-              <p>{recipe.description}</p>
+              {/* <p><strong>Summary:</strong> {recipe.description}</p> */}
+              <pre style={{ whiteSpace: 'pre-wrap' }}>{recipe.content}</pre>
               <button className="btn remove-btn" onClick={() => handleRemove(recipe.id)}>
                 Remove
               </button>

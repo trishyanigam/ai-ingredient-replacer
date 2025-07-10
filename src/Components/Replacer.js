@@ -46,7 +46,7 @@ const Replacer = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer API_KEY' 
+          'Authorization': 'Bearer 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' 
         },
         body: JSON.stringify({
           model: "deepseek/deepseek-chat-v3-0324:free",

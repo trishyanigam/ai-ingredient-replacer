@@ -58,6 +58,8 @@ const HeroSection = () => {
               <Link to="/register" className="no-underline">
                 <button className="btn yellow">Join Now</button>
               </Link>
+              <Link to="/saved-recipes" className="no-underline"><button className="btn red">Saved Recipes</button></Link>
+
             </div>
           </div>
         </div>
