@@ -56,6 +56,12 @@ const Replacer = () => {
           ]
         })
       });
+
+      if (response.status === 429) {
+        setOutput('API call limit exceeded');
+        setExplanations([]);
+        return;
+      }
       const data = await response.json();
       const reply = data.choices?.[0]?.message?.content || 'Sorry, could not generate a response.';
       // Parse the reply into recipe and explanations

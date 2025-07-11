@@ -42,6 +42,14 @@ const Chatbot = () => {
         })
       });
 
+      if (response.status === 429) {
+        setMessages(prev => [
+          ...prev.slice(0, -1),
+          { sender: 'bot', text: 'API call limit exceeded' }
+        ]);
+        return;
+      }
+
       if (!response.body) throw new Error('No response body');
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');

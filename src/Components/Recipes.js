@@ -51,6 +51,11 @@ const Recipes = () => {
         }),
       });
 
+      if (response.status === 429) {
+        setRecipes([{ name: 'API call limit exceeded', description: 'You have reached the daily limit for API calls. Please try again tomorrow.' }]);
+        return;
+      }
+
       console.log('Response status:', response.status);
       const data = await response.json();
       console.log('API response:', data);
