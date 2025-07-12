@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
-import './Replacer.css';
+import '../styles/Replacer.css';
 
+/**
+ * Replacer
+ * Allows users to paste a recipe and apply ingredient substitutions
+ * based on dietary preferences (vegan, nut-free, gluten-free).
+ * Also includes a feature to save modified recipes to localStorage.
+ */
 const Replacer = () => {
+  // Original recipe input from user
   const [recipe, setRecipe] = useState('');
+
+  // Preferences selected by the user
   const [preferences, setPreferences] = useState({
     vegan: false,
     nutFree: false,
@@ -11,10 +20,15 @@ const Replacer = () => {
     eggFree: false,
     sugarFree: false,
   });
+
+  // Final modified recipe output and explanation list
   const [output, setOutput] = useState('');
   const [explanations, setExplanations] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Handles checkbox state changes for dietary preferences.
+   */
   const handleCheckboxChange = (e) => {
     setPreferences({
       ...preferences,
@@ -61,6 +75,11 @@ const Replacer = () => {
         setOutput('API call limit exceeded');
         setExplanations([]);
         return;
+    // Nut-free substitutions
+    if (preferences.nutFree) {
+      if (/almond/gi.test(modified)) {
+        modified = modified.replace(/almond/gi, 'sunflower seed');
+        newExplanations.push("Replaced almond with sunflower seed (nut-free option)");
       }
       const data = await response.json();
       const reply = data.choices?.[0]?.message?.content || 'Sorry, could not generate a response.';
@@ -78,14 +97,35 @@ const Replacer = () => {
     } finally {
       setLoading(false);
     }
+
+    // Gluten-free substitutions
+    if (preferences.glutenFree) {
+      if (/flour/gi.test(modified)) {
+        modified = modified.replace(/flour/gi, 'rice flour');
+        newExplanations.push("Replaced flour with rice flour (gluten-free alternative)");
+      }
+      if (/bread/gi.test(modified)) {
+        modified = modified.replace(/bread/gi, 'gluten-free bread');
+        newExplanations.push("Replaced bread with gluten-free bread");
+      }
+    }
+
+    // Update state
+    setOutput(modified || 'Please enter a recipe.');
+    setExplanations(newExplanations);
   };
 
+  /**
+   * Saves the modified recipe and explanation to localStorage.
+   * Includes a timestamp-based ID and alerts on success.
+   */
   const saveRecipeToLocalStorage = () => {
     if (!output) {
       alert("Please generate a modified recipe first.");
       return;
     }
     const saved = JSON.parse(localStorage.getItem('savedRecipes')) || [];
+
     const newRecipe = {
       id: Date.now(),
       title: output.split('\n')[0] || 'Untitled Recipe',
@@ -243,6 +283,75 @@ const Replacer = () => {
         )}
       </div>
     </>
+    <div className="replacer-container">
+      {/* Section title */}
+      <h2>AI Ingredient Replacer</h2>
+
+      {/* Recipe input area */}
+      <textarea
+        placeholder="Paste your recipe here..."
+        rows={8}
+        value={recipe}
+        onChange={(e) => setRecipe(e.target.value)}
+      />
+
+      {/* Dietary preference checkboxes */}
+      <div className="checkboxes">
+        <label>
+          <input
+            type="checkbox"
+            name="vegan"
+            checked={preferences.vegan}
+            onChange={handleCheckboxChange}
+          />
+          Vegan
+        </label>
+
+        <label>
+          <input
+            type="checkbox"
+            name="nutFree"
+            checked={preferences.nutFree}
+            onChange={handleCheckboxChange}
+          />
+          Nut-Free
+        </label>
+
+        <label>
+          <input
+            type="checkbox"
+            name="glutenFree"
+            checked={preferences.glutenFree}
+            onChange={handleCheckboxChange}
+          />
+          Gluten-Free
+        </label>
+      </div>
+
+      {/* Replace button */}
+      <button onClick={handleReplace}>Replace Ingredients</button>
+
+      {/* Output of modified recipe */}
+      {output && (
+        <div className="output-box">
+          <h3>Modified Recipe:</h3>
+          <pre>{output}</pre>
+          <button onClick={saveRecipeToLocalStorage}>Save Recipe</button>
+        </div>
+      )}
+
+      {/* Explanation of ingredient replacements */}
+      {explanations.length > 0 && (
+        <div className="explanation-box">
+          <h3>Replacements Made:</h3>
+          <ul>
+            {explanations.map((exp, idx) => (
+              <li key={idx}>{exp}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 };
 

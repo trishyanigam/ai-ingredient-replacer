@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from 'react';
 import './Recipes.css';
 
@@ -16,6 +17,16 @@ const defaultRecipes = [
   },
 ];
 
+=======
+import React from 'react';
+import '../styles/Recipes.css';
+
+/**
+ * Recipes
+ * Displays a set of featured recipe cards with health-focused options.
+ * Recipes are static for now but can be later replaced by dynamic content.
+ */
+>>>>>>> b03660d (fix css and added comments to js files)
 const Recipes = () => {
   const [query, setQuery] = useState('');
   const [recipes, setRecipes] = useState(defaultRecipes);
@@ -95,9 +106,14 @@ const Recipes = () => {
 
   return (
     <div className="recipes-container">
+      
+      {/* Section Header */}
       <h2>Featured Recipes</h2>
-      <p className="subheading">Explore healthy, allergy-safe, and AI-optimized recipes</p>
+      <p className="subheading">
+        Explore healthy, allergy-safe, and AI-optimized recipes
+      </p>
 
+<<<<<<< HEAD
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '1rem' }}>
         <input
           type="text"
@@ -125,6 +141,35 @@ const Recipes = () => {
         >
           Search
         </button>
+=======
+      {/* Recipe Cards */}
+      <div className="recipe-cards">
+
+        {/* Recipe 1: Vegan Pancakes */}
+        <div className="recipe-card">
+          <h3>Vegan Pancakes</h3>
+          <p>
+            Fluffy pancakes made with almond milk and flaxseed.
+          </p>
+        </div>
+
+        {/* Recipe 2: Gluten-Free Pasta */}
+        <div className="recipe-card">
+          <h3>Gluten-Free Pasta</h3>
+          <p>
+            Delicious rice flour pasta served with veggie sauce.
+          </p>
+        </div>
+
+        {/* Recipe 3: Nut-Free Brownies */}
+        <div className="recipe-card">
+          <h3>Nut-Free Brownies</h3>
+          <p>
+            Chocolatey brownies using sunflower seed butter.
+          </p>
+        </div>
+
+>>>>>>> b03660d (fix css and added comments to js files)
       </div>
 
       {loading ? (
