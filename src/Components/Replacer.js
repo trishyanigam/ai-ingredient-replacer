@@ -1,17 +1,8 @@
 import React, { useState } from 'react';
 import '../styles/Replacer.css';
 
-/**
- * Replacer
- * Allows users to paste a recipe and apply ingredient substitutions
- * based on dietary preferences (vegan, nut-free, gluten-free).
- * Also includes a feature to save modified recipes to localStorage.
- */
 const Replacer = () => {
-  // Original recipe input from user
   const [recipe, setRecipe] = useState('');
-
-  // Preferences selected by the user
   const [preferences, setPreferences] = useState({
     vegan: false,
     nutFree: false,
@@ -21,14 +12,10 @@ const Replacer = () => {
     sugarFree: false,
   });
 
-  // Final modified recipe output and explanation list
   const [output, setOutput] = useState('');
   const [explanations, setExplanations] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  /**
-   * Handles checkbox state changes for dietary preferences.
-   */
   const handleCheckboxChange = (e) => {
     setPreferences({
       ...preferences,
@@ -42,25 +29,37 @@ const Replacer = () => {
       setExplanations([]);
       return;
     }
+
     setLoading(true);
     setOutput('');
     setExplanations([]);
+
     try {
-      // Get the latest preferences directly
       const userPrefs = [];
-      if (document.querySelector('input[name="vegan"]').checked) userPrefs.push('vegan');
-      if (document.querySelector('input[name="nutFree"]').checked) userPrefs.push('nut-free');
-      if (document.querySelector('input[name="glutenFree"]').checked) userPrefs.push('gluten-free');
-      if (document.querySelector('input[name="dairyFree"]').checked) userPrefs.push('dairy-free');
-      if (document.querySelector('input[name="eggFree"]').checked) userPrefs.push('egg-free');
-      if (document.querySelector('input[name="sugarFree"]').checked) userPrefs.push('sugar-free');
-      const systemPrompt = `You are an expert AI ingredient replacer. Given a recipe and dietary preferences (${userPrefs.join(", ") || 'none'}), return the modified recipe with smart ingredient substitutions. After the recipe, provide a short bullet list of what was replaced and why. Only change ingredients that conflict with the preferences. Format the output as:\n\nModified Recipe:\n<recipe>\n\nReplacements Made:\n- <explanation1>\n- <explanation2>\nUse simple language and emojis where possible.`;
+      if (preferences.vegan) userPrefs.push('vegan');
+      if (preferences.nutFree) userPrefs.push('nut-free');
+      if (preferences.glutenFree) userPrefs.push('gluten-free');
+      if (preferences.dairyFree) userPrefs.push('dairy-free');
+      if (preferences.eggFree) userPrefs.push('egg-free');
+      if (preferences.sugarFree) userPrefs.push('sugar-free');
+
+      const systemPrompt = `You are an expert AI ingredient replacer. Given a recipe and dietary preferences (${userPrefs.join(", ") || 'none'}), return the modified recipe with smart ingredient substitutions. After the recipe, provide a short bullet list of what was replaced and why. Only change ingredients that conflict with the preferences. Format the output as:
+
+Modified Recipe:
+<recipe>
+
+Replacements Made:
+- <explanation1>
+- <explanation2>
+Use simple language and emojis where possible.`;
+
       const userMessage = `Recipe:\n${recipe}\n\nPreferences: ${userPrefs.length > 0 ? userPrefs.join(", ") : 'none'}`;
+
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer YOUR_API_KEY' 
+          'Authorization': 'Bearer YOUR_API_KEY'
         },
         body: JSON.stringify({
           model: "deepseek/deepseek-chat-v3-0324:free",
@@ -75,15 +74,12 @@ const Replacer = () => {
         setOutput('API call limit exceeded');
         setExplanations([]);
         return;
-    // Nut-free substitutions
-    if (preferences.nutFree) {
-      if (/almond/gi.test(modified)) {
-        modified = modified.replace(/almond/gi, 'sunflower seed');
-        newExplanations.push("Replaced almond with sunflower seed (nut-free option)");
       }
+
       const data = await response.json();
       const reply = data.choices?.[0]?.message?.content || 'Sorry, could not generate a response.';
-      // Parse the reply into recipe and explanations
+
+      // Parse reply into modified recipe and explanation list
       const [_, modRecipe, __, ...exps] = reply.split(/Modified Recipe:|Replacements Made:/);
       setOutput(modRecipe ? modRecipe.trim() : reply.trim());
       setExplanations(
@@ -91,34 +87,16 @@ const Replacer = () => {
           ? exps.join('').split(/\n|•|-/).map(s => s.trim()).filter(Boolean)
           : []
       );
+
     } catch (err) {
+      console.error(err);
       setOutput('Sorry, something went wrong.');
       setExplanations([]);
     } finally {
       setLoading(false);
     }
-
-    // Gluten-free substitutions
-    if (preferences.glutenFree) {
-      if (/flour/gi.test(modified)) {
-        modified = modified.replace(/flour/gi, 'rice flour');
-        newExplanations.push("Replaced flour with rice flour (gluten-free alternative)");
-      }
-      if (/bread/gi.test(modified)) {
-        modified = modified.replace(/bread/gi, 'gluten-free bread');
-        newExplanations.push("Replaced bread with gluten-free bread");
-      }
-    }
-
-    // Update state
-    setOutput(modified || 'Please enter a recipe.');
-    setExplanations(newExplanations);
   };
 
-  /**
-   * Saves the modified recipe and explanation to localStorage.
-   * Includes a timestamp-based ID and alerts on success.
-   */
   const saveRecipeToLocalStorage = () => {
     if (!output) {
       alert("Please generate a modified recipe first.");
@@ -169,7 +147,6 @@ const Replacer = () => {
 
   return (
     <>
-      {/* Floating sample recipes bar - Left */}
       <div className="floating-recipes-bar left">
         <span>Try a sample recipe:</span>
         {sampleRecipesLeft.map((rec, idx) => (
@@ -183,7 +160,7 @@ const Replacer = () => {
           </button>
         ))}
       </div>
-      {/* Floating sample recipes bar - Right */}
+
       <div className="floating-recipes-bar right">
         <span>Try a sample recipe:</span>
         {sampleRecipesRight.map((rec, idx) => (
@@ -197,73 +174,35 @@ const Replacer = () => {
           </button>
         ))}
       </div>
+
       <div className="replacer-container">
         <h2>AI Ingredient Replacer</h2>
+
         <textarea
           placeholder="Paste your recipe here..."
           rows={8}
           value={recipe}
           onChange={(e) => setRecipe(e.target.value)}
         />
+
         <div className="checkboxes">
-          <label>
-            <input
-              type="checkbox"
-              name="vegan"
-              checked={preferences.vegan}
-              onChange={handleCheckboxChange}
-            />
-            Vegan
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              name="nutFree"
-              checked={preferences.nutFree}
-              onChange={handleCheckboxChange}
-            />
-            Nut-Free
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              name="glutenFree"
-              checked={preferences.glutenFree}
-              onChange={handleCheckboxChange}
-            />
-            Gluten-Free
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              name="dairyFree"
-              checked={preferences.dairyFree}
-              onChange={handleCheckboxChange}
-            />
-            Dairy-Free
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              name="eggFree"
-              checked={preferences.eggFree}
-              onChange={handleCheckboxChange}
-            />
-            Egg-Free
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              name="sugarFree"
-              checked={preferences.sugarFree}
-              onChange={handleCheckboxChange}
-            />
-            Sugar-Free
-          </label>
+          {Object.entries(preferences).map(([key, value]) => (
+            <label key={key}>
+              <input
+                type="checkbox"
+                name={key}
+                checked={value}
+                onChange={handleCheckboxChange}
+              />
+              {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+            </label>
+          ))}
         </div>
+
         <button onClick={handleReplace} disabled={loading}>
           {loading ? 'Replacing...' : 'Replace Ingredients'}
         </button>
+
         {output && (
           <div className="output-box">
             <h3>Modified Recipe:</h3>
@@ -271,6 +210,7 @@ const Replacer = () => {
             <button onClick={saveRecipeToLocalStorage}>Save Recipe</button>
           </div>
         )}
+
         {explanations.length > 0 && (
           <div className="explanation-box">
             <h3>Replacements Made:</h3>
@@ -283,75 +223,6 @@ const Replacer = () => {
         )}
       </div>
     </>
-    <div className="replacer-container">
-      {/* Section title */}
-      <h2>AI Ingredient Replacer</h2>
-
-      {/* Recipe input area */}
-      <textarea
-        placeholder="Paste your recipe here..."
-        rows={8}
-        value={recipe}
-        onChange={(e) => setRecipe(e.target.value)}
-      />
-
-      {/* Dietary preference checkboxes */}
-      <div className="checkboxes">
-        <label>
-          <input
-            type="checkbox"
-            name="vegan"
-            checked={preferences.vegan}
-            onChange={handleCheckboxChange}
-          />
-          Vegan
-        </label>
-
-        <label>
-          <input
-            type="checkbox"
-            name="nutFree"
-            checked={preferences.nutFree}
-            onChange={handleCheckboxChange}
-          />
-          Nut-Free
-        </label>
-
-        <label>
-          <input
-            type="checkbox"
-            name="glutenFree"
-            checked={preferences.glutenFree}
-            onChange={handleCheckboxChange}
-          />
-          Gluten-Free
-        </label>
-      </div>
-
-      {/* Replace button */}
-      <button onClick={handleReplace}>Replace Ingredients</button>
-
-      {/* Output of modified recipe */}
-      {output && (
-        <div className="output-box">
-          <h3>Modified Recipe:</h3>
-          <pre>{output}</pre>
-          <button onClick={saveRecipeToLocalStorage}>Save Recipe</button>
-        </div>
-      )}
-
-      {/* Explanation of ingredient replacements */}
-      {explanations.length > 0 && (
-        <div className="explanation-box">
-          <h3>Replacements Made:</h3>
-          <ul>
-            {explanations.map((exp, idx) => (
-              <li key={idx}>{exp}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
   );
 };
 

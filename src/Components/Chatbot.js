@@ -1,5 +1,4 @@
-// FoodChatAssistant.js
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import '../styles/Chatbot.css'; // Reuse existing chatbot styles
 
 /**
@@ -8,7 +7,6 @@ import '../styles/Chatbot.css'; // Reuse existing chatbot styles
  * Integrates with OpenRouter API to stream responses.
  */
 const FoodChatAssistant = () => {
-  // State to store the chat history
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
@@ -16,16 +14,12 @@ const FoodChatAssistant = () => {
     }
   ]);
 
-  // State to track user input in the chat field
   const [userInput, setUserInput] = useState('');
+  const botTextRef = useRef(''); // Fix for ESLint no-loop-func warning
 
-  /**
-   * Handles user message submission and fetches bot response via OpenRouter stream
-   */
   const handleUserMessage = async () => {
     if (!userInput.trim()) return;
 
-    // Add user message and a loading message from the bot
     const updatedMessages = [
       ...messages,
       { sender: 'user', text: userInput },
@@ -33,13 +27,14 @@ const FoodChatAssistant = () => {
     ];
     setMessages(updatedMessages);
     setUserInput('');
+    botTextRef.current = ''; // Reset bot text before response starts
 
     try {
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer YOUR_API_KEY' // Replace with secure token
+          'Authorization': 'Bearer YOUR_API_KEY' // Replace with your actual API key
         },
         body: JSON.stringify({
           model: "deepseek/deepseek-chat-v3-0324:free",
@@ -47,7 +42,8 @@ const FoodChatAssistant = () => {
           messages: [
             {
               role: "system",
-              content: "You are an expert AI assistant for ingredient replacement and dietary advice. Only answer questions related to food, recipes, ingredient substitutions, allergies, and healthy cooking. If asked about anything else, politely redirect the user to food-related topics. Answer like a human in simple words, use emojis wherever possible."
+              content:
+                "You are an expert AI assistant for ingredient replacement and dietary advice. Only answer questions related to food, recipes, ingredient substitutions, allergies, and healthy cooking. If asked about anything else, politely redirect the user to food-related topics. Answer like a human in simple words, use emojis wherever possible."
             },
             ...updatedMessages.map(m => ({
               role: m.sender === 'user' ? 'user' : 'assistant',
@@ -60,18 +56,16 @@ const FoodChatAssistant = () => {
       if (response.status === 429) {
         setMessages(prev => [
           ...prev.slice(0, -1),
-          { sender: 'bot', text: 'API call limit exceeded' }
+          { sender: 'bot', text: '⚠️ API call limit exceeded. Try again later.' }
         ]);
         return;
       }
 
       if (!response.body) throw new Error('No response body from server');
 
-      // Stream and decode bot response in real-time
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let done = false;
-      let botText = '';
 
       while (!done) {
         const { value, done: doneReading } = await reader.read();
@@ -89,24 +83,26 @@ const FoodChatAssistant = () => {
                 const delta = json.choices?.[0]?.delta?.content;
 
                 if (delta) {
-                  botText += delta;
+                  botTextRef.current += delta;
 
-                  // Update the last bot message with streamed content
                   setMessages(prev => {
                     const updated = [...prev];
-                    updated[updated.length - 1] = { sender: 'bot', text: botText };
+                    updated[updated.length - 1] = { sender: 'bot', text: botTextRef.current };
                     return updated;
                   });
                 }
               } catch (e) {
-                // Ignore JSON parse errors (incomplete chunks)
+                // Ignore incomplete JSON
               }
             }
           });
         }
       }
+
+      // Reset for next interaction
+      botTextRef.current = '';
+
     } catch (error) {
-      // Replace "Thinking..." with error message
       setMessages(prev => [
         ...prev.slice(0, -1),
         { sender: 'bot', text: '❌ Sorry, something went wrong. Please try again.' }
@@ -118,7 +114,6 @@ const FoodChatAssistant = () => {
     <div className="chatbot-container">
       <h2>🍽️ Ask Your Recipe Assistant</h2>
 
-      {/* Chat history window */}
       <div className="chat-window">
         {messages.map((msg, index) => (
           <div key={index} className={`chat-message ${msg.sender}`}>
@@ -127,7 +122,6 @@ const FoodChatAssistant = () => {
         ))}
       </div>
 
-      {/* User input field + send button */}
       <div className="chat-input">
         <input
           type="text"

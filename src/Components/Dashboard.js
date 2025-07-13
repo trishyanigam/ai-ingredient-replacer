@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // import Link
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -8,11 +9,11 @@ const Dashboard = () => {
       <aside className="sidebar">
         <h2>FoodFitAI</h2>
         <nav>
-          <a href="#">Dashboard</a>
-          <a href="#">Recipes</a>
-          <a href="#">MoodMeals</a>
-          <a href="#">Users</a>
-          <a href="#">Settings</a>
+          <Link to="/dashboard">Dashboard</Link>
+          <Link to="/recipes">Recipes</Link>
+          <Link to="/moodmeals">MoodMeals</Link>
+          <Link to="/users">Users</Link>
+          <Link to="/settings">Settings</Link>
         </nav>
       </aside>
 

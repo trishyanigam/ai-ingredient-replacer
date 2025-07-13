@@ -40,10 +40,8 @@ const SavedRecipes = () => {
           savedRecipes.map((recipe) => (
             <div key={recipe.id} className="recipe-card">
               <h3>{recipe.title}</h3>
-              {/* <p><strong>Summary:</strong> {recipe.description}</p> */}
+              <p><strong>Summary:</strong> {recipe.description}</p>
               <pre style={{ whiteSpace: 'pre-wrap' }}>{recipe.content}</pre>
-              <button className="btn remove-btn" onClick={() => handleRemove(recipe.id)}>
-              <p>{recipe.description}</p>
               <button
                 className="btn remove-btn"
                 onClick={() => handleRemove(recipe.id)}
