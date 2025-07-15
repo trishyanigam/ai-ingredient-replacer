@@ -80,7 +80,7 @@ Use simple language and emojis where possible.`;
       const reply = data.choices?.[0]?.message?.content || 'Sorry, could not generate a response.';
 
       // Parse reply into modified recipe and explanation list
-      const [_, modRecipe, __, ...exps] = reply.split(/Modified Recipe:|Replacements Made:/);
+      const [, modRecipe, , ...exps] = reply.split(/Modified Recipe:|Replacements Made:/);
       setOutput(modRecipe ? modRecipe.trim() : reply.trim());
       setExplanations(
         exps.length > 0
