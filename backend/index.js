@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 // Replace below with your connection string (no need for env)
-const mongoURI = "mongodb+srv://trishyanigam:s1v9wm6zH2i5u5N7@devcluster.qejljxt.mongodb.net/ingredientApp?retryWrites=true&w=majority&appName=DevCluster";
+const mongoURI = CONNRCTION_STRING ;
 
 // Connect to MongoDB
 mongoose.connect(mongoURI)
