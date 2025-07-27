@@ -1,37 +1,27 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
-const dotenv = require("dotenv");
+// backend/index.js
 
-dotenv.config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
-
-// Middleware
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-// Default route
+// Replace below with your connection string (no need for env)
+const mongoURI = "mongodb+srv://trishyanigam:s1v9wm6zH2i5u5N7@devcluster.qejljxt.mongodb.net/ingredientApp?retryWrites=true&w=majority&appName=DevCluster";
+
+// Connect to MongoDB
+mongoose.connect(mongoURI)
+
+.then(() => console.log("✅ MongoDB Connected"))
+.catch(err => console.error("❌ MongoDB Connection Error:", err));
+
 app.get("/", (req, res) => {
-  res.send("API is working ✅");
+    res.send("Backend working 👋");
 });
 
-// Routes
-app.use("/api/auth", require("./routes/auth"));
-
-// Connect to MongoDB and start server
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("MongoDB connected ✅");
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT} 🚀`);
-    });
-  })
-  .catch((err) => {
-    console.error("DB connection failed ❌", err);
-  });
+const PORT = 5000;
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
