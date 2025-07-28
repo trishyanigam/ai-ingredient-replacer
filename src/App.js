@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './Components/Navbar';
 import Loader from './Components/Loader'; // <-- Import loader
+import { AuthProvider } from './context/AuthContext';
 
 // Lazy load components
 const HeroSection = lazy(() => import('./Components/HeroSection'));
@@ -16,26 +17,29 @@ const Shopping = lazy(() => import('./Components/Shopping'));
 const MoodSelector = lazy(() => import('./Components/MoodSelector'));
 const Dashboard = lazy(() => import('./Components/Dashboard'));
 
+
 function App() {
   return (
-    <Router>
-      <Navbar />
-      <Suspense fallback={<Loader />}>
-        <Routes>
-          <Route path="/" element={<HeroSection />} />
-          <Route path="/replacer" element={<Replacer />} />
-          <Route path="/chatbot" element={<Chatbot />} />
-          <Route path="/recipes" element={<Recipes />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/saved-recipes" element={<SavedRecipes />} />
-          <Route path="/shopping" element={<Shopping />} />
-          <Route path="/moodmeals" element={<MoodSelector />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
-      </Suspense>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Navbar />
+        <Suspense fallback={<Loader />}>
+          <Routes>
+            <Route path="/" element={<HeroSection />} />
+            <Route path="/replacer" element={<Replacer />} />
+            <Route path="/chatbot" element={<Chatbot />} />
+            <Route path="/recipes" element={<Recipes />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/saved-recipes" element={<SavedRecipes />} />
+            <Route path="/shopping" element={<Shopping />} />
+            <Route path="/moodmeals" element={<MoodSelector />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Routes>
+        </Suspense>
+      </Router>
+    </AuthProvider>
   );
 }
 

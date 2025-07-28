@@ -82,6 +82,17 @@
   background-color: #e2fdf8;
 }
 
+.logout {
+  background-color: #ff4757;
+  color: white;
+  border: 1px solid #ff4757;
+}
+
+.logout:hover {
+  background-color: #ff3742;
+  border-color: #ff3742;
+}
+
 .no-underline {
   text-decoration: none;
 }

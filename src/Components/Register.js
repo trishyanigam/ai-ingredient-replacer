@@ -1,86 +1,72 @@
 import React, { useState } from 'react';
 import '../styles/Register.css';
+import { registerUser } from '../api';
+import { useNavigate } from 'react-router-dom';
 
-/**
- * Register
- * A simple registration form component for new users.
- * Collects name, email, and password. Includes a link to the login page.
- */
 const Register = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    let valid = true;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
 
-    // Email validation
-    if (!email.endsWith('@gmail.com')) {
-      setEmailError('Your email should end with @gmail.com');
-      valid = false;
-    } else {
-      setEmailError('');
+    if (!fullName || !email || !password) {
+      setError('All fields are required');
+      return;
     }
 
-    // Password validation
+    if (!email.endsWith('@gmail.com')) {
+      setError('Email must end with @gmail.com');
+      return;
+    }
+
     const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])/;
     if (!passwordRegex.test(password)) {
-      setPasswordError('Password should contain one capital letter and one symbol');
-      valid = false;
-    } else {
-      setPasswordError('');
+      setError('Password must contain at least one uppercase letter and one symbol');
+      return;
     }
 
-    if (valid) {
-      // Handle successful registration
-      console.log('Registration successful!');
+    try {
+      const response = await registerUser({ fullName, email, password });
+      alert('Registration successful');
+      setFullName('');
+      setEmail('');
+      setPassword('');
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Registration failed:', err.message);
+      setError(err.message || 'Registration failed');
     }
   };
 
   return (
     <div className="auth-container">
-      {/* Section Title */}
       <h2>Register</h2>
-
-      {/* Registration Form */}
       <form className="auth-form" onSubmit={handleSubmit}>
-
-        {/* Full Name Field */}
         <input
           type="text"
           placeholder="Full Name"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          required
         />
-
-        {/* Email Field */}
         <input
           type="email"
-          placeholder="Email"
+          placeholder="Email (@gmail.com)"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
-        {emailError && <p className="error-message">{emailError}</p>}
-
-        {/* Password Field */}
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
-        {passwordError && <p className="error-message">{passwordError}</p>}
-
-        {/* Submit Button */}
+        {error && <p className="error-message">{error}</p>}
         <button type="submit">Register</button>
-
-        {/* Login Redirect Link */}
         <p className="switch-link">
           Already have an account? <a href="/login">Login</a>
         </p>

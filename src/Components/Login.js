@@ -1,37 +1,54 @@
-import React from 'react';
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/Login.css';
+import { loginUser } from '../api';
+import { AuthContext } from '../context/AuthContext';
 
-/**
- * Login
- * A simple login form component that collects user's email and password.
- * Contains a link to the registration page for new users.
- */
 const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      const data = await loginUser({ email, password });
+
+      // Use AuthContext login function to update state
+      login(data.token);
+
+      // Navigate to dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      alert(error.response?.data?.message || "Login failed");
+    }
+  };
+
   return (
     <div className="auth-container">
-      {/* Section Title */}
       <h2>Login</h2>
 
-      {/* Login Form */}
-      <form className="auth-form">
-        {/* Email Field */}
+      <form className="auth-form" onSubmit={handleLogin}>
         <input
           type="email"
           placeholder="Email"
           required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
 
-        {/* Password Field */}
         <input
           type="password"
           placeholder="Password"
           required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
 
-        {/* Submit Button */}
         <button type="submit">Login</button>
 
-        {/* Registration Link */}
         <p className="switch-link">
           Don't have an account? <a href="/register">Register</a>
         </p>
