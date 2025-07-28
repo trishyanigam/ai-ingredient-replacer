@@ -2,6 +2,8 @@ const express = require("express");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const cors = require("cors");
+const recipeRoutes = require('./routes/recipeRoutes');
+const User = require('./models/User');
 
 const app = express();
 
@@ -11,6 +13,17 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/recipes", recipeRoutes);
+
+// User count endpoint
+app.get('/api/users/count', async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // DB & Server
 connectDB();

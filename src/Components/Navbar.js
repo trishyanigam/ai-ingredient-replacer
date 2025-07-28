@@ -35,8 +35,12 @@ const Navbar = () => {
       {/* Navigation Links (Center Section) */}
       <ul className="navbar-center">
         {!isLoggedIn ? (
-          // Show only Home for non-logged-in users
-          <li><Link to="/">Home</Link></li>
+          // Show Home, About, and Contact for non-logged-in users
+          <>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/about">About</Link></li>
+            <li><Link to="/contact">Contact Us</Link></li>
+          </>
         ) : (
           // Show all features except Home for logged-in users
           <>

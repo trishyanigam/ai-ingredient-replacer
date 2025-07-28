@@ -57,3 +57,16 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.me = async (req, res) => {
+  try {
+    // req.user is set by auth middleware (to be created)
+    const user = await User.findById(req.user.id).select('fullName email _id');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};

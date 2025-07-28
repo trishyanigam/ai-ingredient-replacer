@@ -1,3 +1,10 @@
+/* Add to the top of the file for global coverage */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 /* === BUTTON STYLES (FIXED) === */
 .btn {
   padding: 10px 20px;             /* Smaller padding */
@@ -52,13 +59,17 @@
   background-image: url('https://t4.ftcdn.net/jpg/04/43/37/07/360_F_443370711_sqHRnSIQovW6uyQ5ZwDpd4kjCG8Q6swm.jpg');
   background-size: cover;
   background-position: center;
+  min-height: 100vh;
   height: 100vh;
+  width: 100vw;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 2rem;
   animation: fadeIn 1.5s ease-in-out;
   color: white;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .overlay {
@@ -170,6 +181,48 @@
   text-decoration: none;
 }
 
+.dashboard-animated-title {
+  font-size: 4rem;
+  font-weight: 1000;
+  background: linear-gradient(270deg, #0a2540, #003d3d, #00c896, #0a2540);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #fff;
+  letter-spacing: 2.5px;
+  line-height: 1.05;
+  text-align: center;
+  margin: 0 0 36px 0;
+  animation: dashboardTitleFadeInScale 1.2s cubic-bezier(0.23, 1, 0.32, 1), dashboardGradientMove 5s ease-in-out infinite;
+}
+
+@keyframes dashboardTitleFadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes dashboardGradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .glass-title {
@@ -194,6 +247,13 @@
   .hero-buttons {
     flex-direction: column;
     align-items: center;
+  }
+
+  .hero-container {
+    padding: 0;
+    min-height: 100vh;
+    height: 100vh;
+    width: 100vw;
   }
 }
 
