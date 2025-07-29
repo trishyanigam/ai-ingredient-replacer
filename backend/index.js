@@ -4,6 +4,7 @@ const authRoutes = require("./routes/authRoutes");
 const cors = require("cors");
 const recipeRoutes = require('./routes/recipeRoutes');
 const User = require('./models/User');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/recipes", recipeRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // User count endpoint
 app.get('/api/users/count', async (req, res) => {

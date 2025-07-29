@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const VoiceSearch = () => {
+const VoiceSearch = ({ isLoggedIn, onLoginPrompt }) => {
   const [listening, setListening] = useState(false);
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
@@ -11,17 +11,17 @@ const VoiceSearch = () => {
   recognition.interimResults = false;
 
   const handleVoiceSearch = () => {
+    if (!isLoggedIn) {
+      if (onLoginPrompt) onLoginPrompt();
+      return;
+    }
     setListening(true);
     recognition.start();
 
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setListening(false);
-
-      // Store transcript in localStorage to be used in Recipes page
       localStorage.setItem('voiceSearch', transcript);
-
-      // Navigate to /recipes
       navigate('/recipes');
     };
 
@@ -65,7 +65,16 @@ const VoiceSearch = () => {
           </div>
         </div>
       )}
-      <button onClick={handleVoiceSearch} style={styles.button}>
+      <button
+        onClick={handleVoiceSearch}
+        style={{
+          ...styles.button,
+          opacity: isLoggedIn ? 1 : 0.6,
+          cursor: isLoggedIn ? 'pointer' : 'not-allowed',
+        }}
+        disabled={!isLoggedIn}
+        title={isLoggedIn ? 'Voice Search' : 'Login to use voice commands'}
+      >
          {listening ? 'Listening...' : 'Voice Search'}
       </button>
     </>

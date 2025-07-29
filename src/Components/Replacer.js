@@ -84,9 +84,19 @@ Use simple language and emojis where possible.`;
       setOutput(modRecipe ? modRecipe.trim() : reply.trim());
       setExplanations(
         exps.length > 0
-          ? exps.join('').split(/\n|•|-/).map(s => s.trim()).filter(Boolean)
+          ? exps.join('').split(/\n|\u2022|-/).map(s => s.trim()).filter(Boolean)
           : []
       );
+
+      // --- Track replaced recipe in localStorage ---
+      const replacerHistory = JSON.parse(localStorage.getItem('replacerHistory')) || [];
+      const newEntry = {
+        title: (modRecipe ? modRecipe.split('\n')[0] : 'Untitled Recipe') || 'Untitled Recipe',
+        date: new Date().toISOString(),
+      };
+      const updatedHistory = [newEntry, ...replacerHistory].slice(0, 10);
+      localStorage.setItem('replacerHistory', JSON.stringify(updatedHistory));
+      // --- End tracking ---
 
     } catch (err) {
       console.error(err);

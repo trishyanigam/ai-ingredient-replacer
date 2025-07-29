@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Navbar.css';
 import VoiceSearch from './VoiceSearch';
 import { AuthContext } from '../context/AuthContext';
+import Modal from './Modal';
 
 /**
  * Navbar
@@ -13,11 +14,15 @@ import { AuthContext } from '../context/AuthContext';
 const Navbar = () => {
   const { isLoggedIn, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = React.useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
+  // Handler for login-required features
+  const handleLoginPrompt = () => setModalOpen(true);
 
   return (
     <nav className="navbar">
@@ -57,7 +62,8 @@ const Navbar = () => {
 
       {/* Authentication Buttons (Right Section) */}
       <div className="navbar-right">
-        <VoiceSearch />
+        {/* VoiceSearch: disabled or prompts login if not logged in */}
+        <VoiceSearch isLoggedIn={isLoggedIn} onLoginPrompt={handleLoginPrompt} />
         {!isLoggedIn ? (
           // Show Login and Register for non-logged-in users
           <>
@@ -65,7 +71,7 @@ const Navbar = () => {
               <button className="nav-btn login">Login</button>
             </Link>
             <Link to="/register" className="no-underline">
-              <button className="nav-btn register">Register</button>
+              <button className="nav-btn register" style={{ border: '2px solid #00c896', color: '#00c896', background: '#fff', fontWeight: 700 }}>Register</button>
             </Link>
           </>
         ) : (
@@ -75,6 +81,17 @@ const Navbar = () => {
           </button>
         )}
       </div>
+      {/* Modal for login-required features */}
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <h2 style={{ color: '#00c896', marginBottom: 16 }}>Login Required</h2>
+        <p style={{ marginBottom: 24 }}>
+          This feature is available for registered users. Please log in or sign up to continue.
+        </p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <button className="btn green" onClick={() => { setModalOpen(false); navigate('/login'); }}>Login</button>
+          <button className="btn yellow" onClick={() => { setModalOpen(false); navigate('/register'); }}>Sign Up</button>
+        </div>
+      </Modal>
     </nav>
   );
 };
