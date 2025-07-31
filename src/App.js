@@ -1,7 +1,8 @@
 import React, { Suspense, lazy, useContext } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './Components/Navbar';
-import Loader from './Components/Loader'; // <-- Import loader
+import Loader from './Components/Loader';
+import ProtectedRoute from './Components/ProtectedRoute';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 
 // Lazy load components
@@ -21,27 +22,67 @@ const Contact = lazy(() => import('./Components/Contact'));
 
 
 function AppRoutes() {
-  const { isLoggedIn } = useContext(AuthContext);
+  const { isLoggedIn, loading } = useContext(AuthContext);
+  
+  // Show loader while checking authentication status
+  if (loading) {
+    return <Loader />;
+  }
+  
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
+        {/* Public routes */}
         <Route path="/" element={<HeroSection />} />
-        <Route path="/replacer" element={<Replacer />} />
-        <Route path="/chatbot" element={<Chatbot />} />
-        <Route path="/recipes" element={<Recipes />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/saved-recipes" element={<SavedRecipes />} />
-        <Route path="/shopping" element={<Shopping />} />
-        <Route path="/moodmeals" element={<MoodSelector />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        {/* Only show About and Contact if not logged in */}
-        {!isLoggedIn && <Route path="/about" element={<About />} />}
-        {!isLoggedIn && <Route path="/contact" element={<Contact />} />}
-        {/* Redirect logged-in users from /about or /contact to /dashboard */}
-        {isLoggedIn && <Route path="/about" element={<Dashboard />} />}
-        {isLoggedIn && <Route path="/contact" element={<Dashboard />} />}
+        <Route path="/register" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Register />} />
+        <Route path="/login" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />} />
+        <Route path="/about" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <About />} />
+        <Route path="/contact" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Contact />} />
+        
+        {/* Protected routes - require authentication */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/replacer" element={
+          <ProtectedRoute>
+            <Replacer />
+          </ProtectedRoute>
+        } />
+        <Route path="/chatbot" element={
+          <ProtectedRoute>
+            <Chatbot />
+          </ProtectedRoute>
+        } />
+        <Route path="/recipes" element={
+          <ProtectedRoute>
+            <Recipes />
+          </ProtectedRoute>
+        } />
+        <Route path="/community" element={
+          <ProtectedRoute>
+            <Community />
+          </ProtectedRoute>
+        } />
+        <Route path="/saved-recipes" element={
+          <ProtectedRoute>
+            <SavedRecipes />
+          </ProtectedRoute>
+        } />
+        <Route path="/shopping" element={
+          <ProtectedRoute>
+            <Shopping />
+          </ProtectedRoute>
+        } />
+        <Route path="/moodmeals" element={
+          <ProtectedRoute>
+            <MoodSelector />
+          </ProtectedRoute>
+        } />
+        
+        {/* Fallback route - redirect to dashboard if logged in, otherwise to home */}
+        <Route path="*" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Navigate to="/" replace />} />
       </Routes>
     </Suspense>
   );

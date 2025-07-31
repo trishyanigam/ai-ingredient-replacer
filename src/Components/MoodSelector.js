@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import '../styles/MoodSelector.css';
+import { getMoodMealsByMood, trackMoodSelection, updateMoodMealInteraction, getUserSavedMeals } from '../api';
+import { AuthContext } from '../context/AuthContext';
 
 /**
- * Predefined food suggestions based on mood categories.
+ * Mapping of custom mood keywords to predefined mood categories.
  */
-const moodSuggestions = {
-  low: ['Oatmeal with banana', 'Avocado toast', 'Lentil soup'],
-  party: ['Nacho platter', 'Mini sliders', 'Fruit punch with lime'],
-  post: ['Grilled chicken with quinoa', 'Protein smoothie with banana and peanut butter', 'Tofu stir fry with brown rice'],
+const moodKeywords = {
+  low: ['tired', 'exhausted', 'sleepy', 'fatigued', 'energy', 'drained'],
+  happy: ['happy', 'excited', 'joyful', 'cheerful', 'celebrate', 'celebration'],
+  stressed: ['stressed', 'anxious', 'worried', 'nervous', 'tense', 'pressure'],
+  workout: ['gym', 'workout', 'exercise', 'fitness', 'training', 'post-workout'],
+  sad: ['sad', 'depressed', 'down', 'blue', 'unhappy', 'gloomy']
 };
 
 /**
  * MoodSelector
  * Allows users to select or type their mood to get tailored food recommendations.
- * Supports both predefined moods and free-text interpretation.
+ * Connects to backend to fetch mood-based meal recommendations and track user interactions.
  */
 const MoodSelector = () => {
+  const { user } = useContext(AuthContext);
+  
   // State for mood selected via buttons
   const [selectedMood, setSelectedMood] = useState('');
 
@@ -24,15 +30,74 @@ const MoodSelector = () => {
 
   // State for food recommendations based on mood
   const [recommendations, setRecommendations] = useState([]);
+  
+  // Additional state for backend integration
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [savedMeals, setSavedMeals] = useState([]);
+  const [interactions, setInteractions] = useState({});
+  const [currentStatId, setCurrentStatId] = useState(null);
+
+  /**
+   * Fetch saved meals on component mount
+   */
+  useEffect(() => {
+    const fetchSavedMeals = async () => {
+      try {
+        const meals = await getUserSavedMeals();
+        setSavedMeals(meals);
+      } catch (err) {
+        console.error('Error fetching saved meals:', err);
+      }
+    };
+    
+    if (user) {
+      fetchSavedMeals();
+    }
+  }, [user]);
 
   /**
    * Handles click on mood button.
-   * Sets selected mood, clears custom input, and updates recommendations.
+   * Sets selected mood, clears custom input, and fetches recommendations from API.
    */
-  const handleMoodClick = (moodKey) => {
+  const handleMoodClick = async (moodKey) => {
     setSelectedMood(moodKey);
     setCustomMood('');
-    setRecommendations(moodSuggestions[moodKey] || []);
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Fetch mood-based meal recommendations
+      const mealData = await getMoodMealsByMood(moodKey);
+      
+      if (mealData && mealData.length > 0) {
+        setRecommendations(mealData);
+      } else {
+        setRecommendations([{
+          mood: moodKey,
+          title: `Default ${moodKey} Meal`,
+          description: `We don't have specific recommendations for ${moodKey} yet.`,
+          recipes: []
+        }]);
+      }
+      
+      // Track this mood selection
+      const trackData = await trackMoodSelection({
+        mood: moodKey,
+        mealId: mealData && mealData.length > 0 ? mealData[0]._id : null
+      });
+      
+      // Save the stat ID for later interactions
+      if (trackData && trackData.moodStat) {
+        setCurrentStatId(trackData.moodStat._id);
+      }
+      
+    } catch (err) {
+      console.error('Error fetching mood meals:', err);
+      setError('Failed to load recommendations. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   /**
@@ -46,24 +111,129 @@ const MoodSelector = () => {
 
   /**
    * Matches custom mood input to predefined moods using keywords.
-   * Falls back to default suggestions if no keyword match.
+   * If no match, uses the custom mood directly.
    */
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!customMood.trim()) {
+      setError('Please enter a mood');
+      return;
+    }
+    
     const mood = customMood.toLowerCase();
-
-    if (mood.includes('energy')) {
-      handleMoodClick('low');
-    } else if (mood.includes('gym') || mood.includes('workout')) {
-      handleMoodClick('post');
-    } else if (mood.includes('party') || mood.includes('celebrate')) {
-      handleMoodClick('party');
+    let matchedMood = null;
+    
+    // Check if the custom mood matches any keywords
+    for (const [key, keywords] of Object.entries(moodKeywords)) {
+      if (keywords.some(keyword => mood.includes(keyword))) {
+        matchedMood = key;
+        break;
+      }
+    }
+    
+    if (matchedMood) {
+      // If we found a match, use the predefined mood
+      handleMoodClick(matchedMood);
     } else {
-      // Default fallback suggestions
-      setRecommendations([
-        'Mixed greens salad with nuts',
-        'Fruit & yogurt parfait',
-        'Veggie wrap with hummus',
-      ]);
+      // Otherwise, use the custom mood directly
+      setSelectedMood('');
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Try to find meals for this custom mood
+        const mealData = await getMoodMealsByMood(mood);
+        
+        if (mealData && mealData.length > 0) {
+          setRecommendations(mealData);
+        } else {
+          // If no specific meals found, create default recommendations
+          setRecommendations([{
+            mood: mood,
+            title: `${mood.charAt(0).toUpperCase() + mood.slice(1)} Meal`,
+            description: `A balanced meal for when you're feeling ${mood}.`,
+            recipes: []
+          }]);
+        }
+        
+        // Track this mood selection
+        const trackData = await trackMoodSelection({
+          mood: mood,
+          mealId: mealData && mealData.length > 0 ? mealData[0]._id : null
+        });
+        
+        // Save the stat ID for later interactions
+        if (trackData && trackData.moodStat) {
+          setCurrentStatId(trackData.moodStat._id);
+        }
+        
+      } catch (err) {
+        console.error('Error processing custom mood:', err);
+        setError('Failed to process your mood. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+  
+  /**
+   * Handle liking a meal recommendation
+   */
+  const handleLikeMeal = async (mealId) => {
+    if (!currentStatId) return;
+    
+    try {
+      // Update the interaction in state for immediate UI feedback
+      setInteractions(prev => ({
+        ...prev,
+        [mealId]: { ...prev[mealId], liked: true }
+      }));
+      
+      // Send the update to the backend
+      await updateMoodMealInteraction({
+        statId: currentStatId,
+        liked: true
+      });
+      
+    } catch (err) {
+      console.error('Error liking meal:', err);
+      // Revert the UI change if the API call fails
+      setInteractions(prev => ({
+        ...prev,
+        [mealId]: { ...prev[mealId], liked: false }
+      }));
+    }
+  };
+  
+  /**
+   * Handle saving a meal recommendation
+   */
+  const handleSaveMeal = async (meal) => {
+    if (!currentStatId) return;
+    
+    try {
+      // Update the interaction in state for immediate UI feedback
+      setInteractions(prev => ({
+        ...prev,
+        [meal._id]: { ...prev[meal._id], saved: true }
+      }));
+      
+      // Add to saved meals for immediate UI update
+      setSavedMeals(prev => [...prev, meal]);
+      
+      // Send the update to the backend
+      await updateMoodMealInteraction({
+        statId: currentStatId,
+        saved: true
+      });
+      
+    } catch (err) {
+      console.error('Error saving meal:', err);
+      // Revert the UI changes if the API call fails
+      setInteractions(prev => ({
+        ...prev,
+        [meal._id]: { ...prev[meal._id], saved: false }
+      }));
+      setSavedMeals(prev => prev.filter(m => m._id !== meal._id));
     }
   };
 
@@ -77,24 +247,38 @@ const MoodSelector = () => {
       {/* Mood Selection Buttons */}
       <div className="mood-options">
         <button
+          className={`mood-btn ${selectedMood === 'happy' ? 'selected' : ''}`}
+          onClick={() => handleMoodClick('happy')}
+        >
+          😊 Happy
+        </button>
+
+        <button
+          className={`mood-btn ${selectedMood === 'stressed' ? 'selected' : ''}`}
+          onClick={() => handleMoodClick('stressed')}
+        >
+          😰 Stressed
+        </button>
+
+        <button
           className={`mood-btn ${selectedMood === 'low' ? 'selected' : ''}`}
           onClick={() => handleMoodClick('low')}
         >
           🥱 Low Energy
         </button>
-
+        
         <button
-          className={`mood-btn ${selectedMood === 'party' ? 'selected' : ''}`}
-          onClick={() => handleMoodClick('party')}
+          className={`mood-btn ${selectedMood === 'workout' ? 'selected' : ''}`}
+          onClick={() => handleMoodClick('workout')}
         >
-          🥳 Party Mode
+          💪 Post-Workout
         </button>
-
+        
         <button
-          className={`mood-btn ${selectedMood === 'post' ? 'selected' : ''}`}
-          onClick={() => handleMoodClick('post')}
+          className={`mood-btn ${selectedMood === 'sad' ? 'selected' : ''}`}
+          onClick={() => handleMoodClick('sad')}
         >
-          😓 Post-gym
+          😢 Sad
         </button>
       </div>
 
@@ -110,16 +294,85 @@ const MoodSelector = () => {
           Get Suggestions
         </button>
       </div>
+      
+      {/* Error Message */}
+      {error && (
+        <div className="error-message">
+          <p>{error}</p>
+        </div>
+      )}
+
+      {/* Loading Indicator */}
+      {loading && (
+        <div className="loading">
+          <div className="spinner"></div>
+          <p>Finding the perfect meal for your mood...</p>
+        </div>
+      )}
 
       {/* Display Recommendations */}
-      {recommendations.length > 0 && (
+      {!loading && recommendations.length > 0 && (
         <div className="recommendations">
           <h3>Recommended for {selectedMood || customMood}</h3>
-          <ul>
-            {recommendations.map((item, index) => (
-              <li key={index}>🍽️ {item}</li>
+          <div className="meal-cards">
+            {recommendations.map((meal, index) => (
+              <div key={index} className="meal-card">
+                <h4>{meal.title}</h4>
+                <p>{meal.description}</p>
+                {meal.recipes && meal.recipes.length > 0 && (
+                  <div className="recipe-list">
+                    <h5>Recipes:</h5>
+                    <ul>
+                      {meal.recipes.map((recipe, idx) => (
+                        <li key={idx}>{recipe.title}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="meal-actions">
+                  <button 
+                    className={`action-btn like-btn ${interactions[meal._id]?.liked ? 'active' : ''}`}
+                    onClick={() => handleLikeMeal(meal._id)}
+                  >
+                    {interactions[meal._id]?.liked ? '❤️ Liked' : '🤍 Like'}
+                  </button>
+                  <button 
+                    className={`action-btn save-btn ${interactions[meal._id]?.saved ? 'active' : ''}`}
+                    onClick={() => handleSaveMeal(meal)}
+                    disabled={interactions[meal._id]?.saved}
+                  >
+                    {interactions[meal._id]?.saved ? '✅ Saved' : '💾 Save'}
+                  </button>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
+        </div>
+      )}
+      
+      {/* Saved Meals Section */}
+      {savedMeals.length > 0 && (
+        <div className="saved-meals">
+          <h3>Your Saved Meals</h3>
+          <div className="meal-cards">
+            {savedMeals.map((meal, index) => (
+              <div key={index} className="meal-card saved">
+                <h4>{meal.title}</h4>
+                <p>{meal.description}</p>
+                {meal.recipes && meal.recipes.length > 0 && (
+                  <div className="recipe-list">
+                    <h5>Recipes:</h5>
+                    <ul>
+                      {meal.recipes.map((recipe, idx) => (
+                        <li key={idx}>{recipe.title}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="saved-badge">Saved</div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
