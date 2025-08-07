@@ -5,11 +5,11 @@ export const API_CONFIG = {
   // Gemini API Configuration
   GEMINI: {
     BASE_URL: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
-    API_KEY: 'AIzaSyDR7ouyP46JZ6zL-XpxR8MeXaLjMCCVgVU', // Replace with your actual Gemini API key
+    API_KEY: 'YOUR_GEMINI_API_KEY', // Replace with your actual Gemini API key
     MODEL: 'gemini-2.0-flash',
     HEADERS: {
       'Content-Type': 'application/json',
-      'X-goog-api-key': 'AIzaSyDR7ouyP46JZ6zL-XpxR8MeXaLjMCCVgVU'
+      'X-goog-api-key': 'YOUR_GEMINI_API_KEY'
     }
   },
   
