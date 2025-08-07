@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/Replacer.css';
+import { getCurrentProviderConfig, extractResponseContent, createGeminiRequest } from '../config/apiConfig';
 
 const Replacer = () => {
   const [recipe, setRecipe] = useState('');
@@ -55,19 +56,12 @@ Use simple language and emojis where possible.`;
 
       const userMessage = `Recipe:\n${recipe}\n\nPreferences: ${userPrefs.length > 0 ? userPrefs.join(", ") : 'none'}`;
 
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const config = getCurrentProviderConfig();
+      
+      const response = await fetch(config.BASE_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer YOUR_API_KEY'
-        },
-        body: JSON.stringify({
-          model: "deepseek/deepseek-chat-v3-0324:free",
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessage }
-          ]
-        })
+        headers: config.HEADERS,
+        body: JSON.stringify(createGeminiRequest(userMessage, systemPrompt))
       });
 
       if (response.status === 429) {
@@ -76,8 +70,12 @@ Use simple language and emojis where possible.`;
         return;
       }
 
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
       const data = await response.json();
-      const reply = data.choices?.[0]?.message?.content || 'Sorry, could not generate a response.';
+      const reply = extractResponseContent(data) || 'Sorry, could not generate a response.';
 
       // Parse reply into modified recipe and explanation list
       const [, modRecipe, , ...exps] = reply.split(/Modified Recipe:|Replacements Made:/);

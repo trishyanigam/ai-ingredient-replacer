@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/Recipes.css'; // 
+import { getCurrentProviderConfig, extractResponseContent, createGeminiRequest } from '../config/apiConfig';
 
 
 const defaultRecipes = [
@@ -35,21 +36,14 @@ const Recipes = () => {
     if (!dishName.trim()) return;
     setLoading(true);
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const config = getCurrentProviderConfig();
+      
+      const prompt = `Give me a detailed recipe for ${dishName}. Only return the recipe in short format with title and ingredients.`;
+      
+      const response = await fetch(config.BASE_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer YOUR_API_KEY`,
-        },
-        body: JSON.stringify({
-          model: 'deepseek/deepseek-chat-v3-0324:free',
-          messages: [
-            {
-              role: 'user',
-              content: `Give me a detailed recipe for ${dishName}. Only return the recipe in short format with title and ingredients.`,
-            },
-          ],
-        }),
+        headers: config.HEADERS,
+        body: JSON.stringify(createGeminiRequest(prompt))
       });
 
       if (response.status === 429) {
@@ -57,11 +51,15 @@ const Recipes = () => {
         return;
       }
 
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
       console.log('Response status:', response.status);
       const data = await response.json();
       console.log('API response:', data);
 
-      const content = data.choices?.[0]?.message?.content || 'No recipe found';
+      const content = extractResponseContent(data) || 'No recipe found';
 
       setRecipes([
         {

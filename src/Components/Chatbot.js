@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import '../styles/Chatbot.css'; // Reuse existing chatbot styles
+import { getCurrentProviderConfig, extractResponseContent, createGeminiRequest } from '../config/apiConfig';
 
 /**
  * FoodChatAssistant
  * A responsive AI-powered chatbot for dietary and recipe-related queries.
- * Integrates with OpenRouter API to stream responses.
+ * Integrates with Gemini API to stream responses.
  */
 const FoodChatAssistant = () => {
   const [messages, setMessages] = useState([
@@ -15,7 +16,6 @@ const FoodChatAssistant = () => {
   ]);
 
   const [userInput, setUserInput] = useState('');
-  const botTextRef = useRef(''); // Fix for ESLint no-loop-func warning
 
   const handleUserMessage = async () => {
     if (!userInput.trim()) return;
@@ -27,30 +27,19 @@ const FoodChatAssistant = () => {
     ];
     setMessages(updatedMessages);
     setUserInput('');
-    botTextRef.current = ''; // Reset bot text before response starts
 
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const config = getCurrentProviderConfig();
+      
+      // Create a simple prompt with system instruction and user input
+      const systemPrompt = "You are an expert AI assistant for ingredient replacement and dietary advice. Only answer questions related to food, recipes, ingredient substitutions, allergies, and healthy cooking. If asked about anything else, politely redirect the user to food-related topics. Answer like a human in simple words, use emojis wherever possible.";
+      
+      const userPrompt = userInput;
+
+      const response = await fetch(config.BASE_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer YOUR_API_KEY' // Replace with your actual API key
-        },
-        body: JSON.stringify({
-          model: "deepseek/deepseek-chat-v3-0324:free",
-          stream: true,
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are an expert AI assistant for ingredient replacement and dietary advice. Only answer questions related to food, recipes, ingredient substitutions, allergies, and healthy cooking. If asked about anything else, politely redirect the user to food-related topics. Answer like a human in simple words, use emojis wherever possible."
-            },
-            ...updatedMessages.map(m => ({
-              role: m.sender === 'user' ? 'user' : 'assistant',
-              content: m.text
-            }))
-          ]
-        })
+        headers: config.HEADERS,
+        body: JSON.stringify(createGeminiRequest(userPrompt, systemPrompt))
       });
 
       if (response.status === 429) {
@@ -61,46 +50,25 @@ const FoodChatAssistant = () => {
         return;
       }
 
-      if (!response.body) throw new Error('No response body from server');
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let done = false;
-
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-
-        if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          chunk.split('\n').forEach(line => {
-            if (line.startsWith('data:')) {
-              const data = line.replace('data:', '').trim();
-              if (data === '[DONE]') return;
-
-              try {
-                const json = JSON.parse(data);
-                const delta = json.choices?.[0]?.delta?.content;
-
-                if (delta) {
-                  botTextRef.current += delta;
-
-                  setMessages(prev => {
-                    const updated = [...prev];
-                    updated[updated.length - 1] = { sender: 'bot', text: botTextRef.current };
-                    return updated;
-                  });
-                }
-              } catch (e) {
-                // Ignore incomplete JSON
-              }
-            }
-          });
-        }
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
       }
 
-      // Reset for next interaction
-      botTextRef.current = '';
+      const data = await response.json();
+      const reply = extractResponseContent(data);
+
+      if (reply) {
+        setMessages(prev => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { sender: 'bot', text: reply };
+          return updated;
+        });
+      } else {
+        setMessages(prev => [
+          ...prev.slice(0, -1),
+          { sender: 'bot', text: '❌ Sorry, I could not generate a response. Please try again.' }
+        ]);
+      }
 
     } catch (error) {
       setMessages(prev => [
